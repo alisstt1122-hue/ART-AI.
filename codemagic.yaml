@@ -1,0 +1,29 @@
+
+workflows:
+  art-ai-android:
+    name: ART AI APK Build
+    max_build_duration: 120
+    instance_type: mac_mini_m2
+
+    environment:
+      java: 17
+
+    scripts:
+      - name: Extract project
+        script: |
+          mkdir -p project
+          unzip -q ART_AI_Project_clean.zip -d project
+
+      - name: Install Gradle 8.9
+        script: |
+          curl -L https://services.gradle.org/distributions/gradle-8.9-bin.zip -o /tmp/gradle.zip
+          unzip -q /tmp/gradle.zip -d /tmp
+
+      - name: Build APK
+        script: |
+          cd project
+          /tmp/gradle-8.9/bin/gradle --no-daemon assembleDebug
+
+    artifacts:
+      - project/app/build/outputs/apk/debug/app-debug.apk
+      

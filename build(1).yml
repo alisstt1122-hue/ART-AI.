@@ -1,0 +1,39 @@
+name: Build ART AI APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Extract project
+        run: |
+          ZIP_FILE="ART_AI_Project_clean.zip"
+          test -f "$ZIP_FILE" || { echo "Missing $ZIP_FILE"; exit 1; }
+          mkdir -p project
+          unzip -q "$ZIP_FILE" -d project
+          echo "Java/Kotlin target configuration:"
+          grep -n -A8 'compileOptions' project/app/build.gradle.kts
+
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.9"
+
+      - name: Build APK
+        working-directory: project
+        run: gradle --no-daemon assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: ART-AI-APK
+          path: project/app/build/outputs/apk/debug/app-debug.apk
